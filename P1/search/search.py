@@ -85,8 +85,36 @@ def depthFirstSearch(problem):
     print "Start:", problem.getStartState()
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
+
+    1. tao 1 stack
+    2. tao 1 list cac node da duoc tham
+    3. them node ban dau vao stack. neu node do la trang thai ket thuc --> return
+    4. them node do, hanh dong de co node do (ban dau la rong) vao stack
+    5. while stack khong rong
+      5.1. currentState, actions_list = stack.pop
+      5.2. kiem tra xem co trong visited_nodes chua
+      5.3. kiem tra xem la trang thai ket thuc chua
+      5.4. neu chua phai ket thuc, duyet cac trang thai tiep theo cua currentState, them vao stack
+
     """
-    "*** YOUR CODE HERE ***"
+
+
+    startState = problem.getStartState()
+    if problem.isGoalState(startState):
+        return []
+    stack = util.Stack()
+    visited_nodes = []
+    stack.push((startState,[]))
+    while not stack.isEmpty():
+        currentState, actions_list = stack.pop()
+        if currentState not in visited_nodes:
+            visited_nodes.append(currentState)
+            if (problem.isGoalState(currentState)):
+                return actions_list
+            for nextState, action, cost in problem.getSuccessors(currentState):
+                next_actions_list = actions_list + [action]
+                stack.push((nextState, next_actions_list))
+
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
