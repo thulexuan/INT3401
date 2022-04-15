@@ -500,19 +500,18 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    if len(foodGrid.asList()) == 0:
-        return 0
 
     foodToEat = foodGrid.asList()
     totalCost = 0
     current_pos = position
-    while len(foodToEat > 0):
-        heuristic_cost, food = min([(util.manhattanDistance(state, food), food) for food in foodToEat])
+    while foodToEat:
+        heuristic_cost, food = min([(util.manhattanDistance(current_pos, food), food) for food in foodToEat])
         foodToEat.remove(food)
-        totalCost += heuristic_cost
         current_pos = food
+        totalCost += heuristic_cost
 
     return totalCost
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
