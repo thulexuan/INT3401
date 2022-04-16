@@ -288,6 +288,8 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        # list cac corner da duoc tham, ban dau la rong
+        self.visited_corners = []
 
     def getStartState(self):
         """
@@ -295,8 +297,8 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        return (self.startingPosition, []) # return a tuple that included
-        # startingPosition and an empty list, means that at first, no corner is discovered
+        #moi state gom position hien tai va list cac corner da duoc tham
+        return (self.startingPosition, self.visited_corners)
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -304,16 +306,9 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        state_pos = state[0]
-        visitedCorners = state[1]
-
-        if state_pos in self.corners:
-            if not state_pos in visitedCorners:
-                visitedCorners.append(state_pos)
-            return len(visitedCorners) == 4
-        else:
-            return False
-
+        if len(state[1]) == 4:
+            return True
+        return False
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -327,8 +322,11 @@ class CornersProblem(search.SearchProblem):
             is the incremental cost of expanding to that successor
         """
 
-        successors = [] #a list of tuples, each tuple included (successor: nextState, action: actions
-        # to get successor, cost: 1
+        successors = [] # o moi trang thai, co the di theo 4 huong --> successors gom 4 phan tu la 4 trang thai tiep theo
+        # co the co tu trang thai hien tai (neu ca 4 huong khong cham tuong, huong nao cham tuong thi so phan tu giam di 1)
+        x, y = state[0]  # lay toa do x,y tai state hien tai
+        visitedCorners = state[1]  # lay list cac corner da duoc tham
+
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
@@ -338,20 +336,21 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-            x,y = state[0]
-            visitedCorners = state[1]
+
 
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x+dx), int(y+dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                successorVisitedCorners = list(visitedCorners)
+                copy_visited_corners = list(visitedCorners)#ta can lay list visited_corners cua state hien tai, ma dang xet trong
+                # 4 truong hop (len,xuong,trai,phai). Voi moi truong hop, visited_corners phai deu la visited_corners cua state dang xet
+                # --> voi moi truong hop, phai tao 1 list copy_visited_corners moi
                 next_state_pos = (nextx, nexty)
                 if next_state_pos in self.corners:
                     if next_state_pos not in visitedCorners:
-                        successorVisitedCorners.append(next_state_pos)
-                successor = ((next_state_pos, successorVisitedCorners), action, 1)
-                successors.append(successor)
+                        copy_visited_corners.append(next_state_pos)
+
+                successors.append(((next_state_pos, copy_visited_corners), action, 1))
 
 
 
@@ -388,25 +387,33 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
+    """
+        1.Neu state hien tai la goalState --> return 0
+        2.Tinh quang duong ngan nhat tu vi tri hien tai den 1 corner ma chua duoc tham, cong vao bien cost
+        3.Cap nhat vi tri hien tai o corner do
+        4.Loai corner do ra khoi list cac corner chua duoc tham
+        5.Lap lai buoc 2 cho den khi cac corner duoc tham het, tra ve cost
+        """
     "*** YOUR CODE HERE ***"
 
-    visitedCorners = state[1]
-    notVisitedCorner = []
-    for corner in corners:
-        if corner not in visitedCorners:
-            notVisitedCorner.append(corner)
 
-    totalCost = 0
-    corner_pos = state[0]
-    current_pos = corner_pos
-    while notVisitedCorner:
-        heuristic_cost, corner = min([(util.manhattanDistance(current_pos, corner), corner) for corner in notVisitedCorner])
-        notVisitedCorner.remove(corner)
-        current_pos =  corner
-        totalCost += heuristic_cost
-    return totalCost
+    cost_result = 0
+    visited_corners = state[1]
+    current_state_pos = state[0]
+    unvisited_corners = list(corner for corner in corners if corner not in visited_corners)
+    while len(unvisited_corners) > 0:
+        cost_array = []
+        for corner in unvisited_corners:
+            cost_array.append(util.manhattanDistance(current_state_pos, corner))
 
-    return 0 # Default to trivial solution
+        for corner in unvisited_corners:
+            if util.manhattanDistance(current_state_pos, corner) == min(cost_array):
+                cost_result += min(cost_array)
+                current_state_pos = corner
+                unvisited_corners.remove(corner)
+
+    return cost_result
+    #return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
