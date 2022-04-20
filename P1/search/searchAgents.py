@@ -388,11 +388,12 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     """
+        Heuristic: tinh do dai(manhattan) ngan nhat tu vi tri hien tai cua pacman den khi dat trang thai ket thuc la an het 4 goc 
         1.Neu state hien tai la goalState --> return 0
         2.Tinh quang duong ngan nhat tu vi tri hien tai den 1 corner ma chua duoc tham, cong vao bien cost
         3.Cap nhat vi tri hien tai o corner do
         4.Loai corner do ra khoi list cac corner chua duoc tham
-        5.Lap lai buoc 2 cho den khi cac corner duoc tham het, tra ve cost
+        5.Lap lai buoc 2 cho den khi cac corner duoc tham het, tra ve cost(cost: duong di ngan nhat)
         """
     "*** YOUR CODE HERE ***"
 
@@ -471,6 +472,7 @@ class FoodSearchProblem:
             cost += 1
         return cost
 
+
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
@@ -508,16 +510,20 @@ def foodHeuristic(state, problem):
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
 
-    foodToEat = foodGrid.asList()
-    totalCost = 0
-    current_pos = position
-    while foodToEat:
-        heuristic_cost, food = min([(util.manhattanDistance(current_pos, food), food) for food in foodToEat])
-        foodToEat.remove(food)
-        current_pos = food
-        totalCost += heuristic_cost
+    """
+    Heuristic: tinh so buoc tu vi tri hien tai den trang thai gan trang thai goal nhat
+    - Voi moi toa do cua food, tinh mazeDistance tu vi tri hien tai den food 
+    - mazeDistance: do dai cua list cac hanh dong(theo bfs nen la so buoc ngan nhat) de dat duoc trang thai tiep theo
+    - gia tri mazeDistance lon nhat >= so banh lon nhat co the an khi di tu vi tri hien tai 
+    """
+    foods_list = foodGrid.asList()
+    current_state = state[0]
+    max = 0
+    for food in foods_list:
+        if mazeDistance(current_state, food, problem.startingGameState) > max: #mazeDistance co tham so gameState la bat ky game state nao, o day la start state
+            max = mazeDistance(current_state, food, problem.startingGameState)
 
-    return totalCost
+    return max
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -537,6 +543,7 @@ class ClosestDotSearchAgent(SearchAgent):
         self.actionIndex = 0
         print 'Path found with cost %d.' % len(self.actions)
 
+
     def findPathToClosestDot(self, gameState):
         """
         Returns a path (a list of actions) to the closest dot, starting from
@@ -549,7 +556,9 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        return search.ucs(problem)
+        return search.bfs(problem) #chay bfs tu vi tri hien tai den goalState la cho co banh bat ky
+        # thi se duoc cho co banh day la cho co banh gan nhat
+
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -586,11 +595,11 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        distance, goal = min([(util.manhattanDistance(state, goal), goal) for goal in self.food.asList()])
-        if state == goal:
-            return True
-        else:
-            return False
+        """
+        Pacman an cai banh o vi tri bat ky, isGoalState khi o do khong co banh
+        """
+
+        return self.food[x][y]
         util.raiseNotDefined()
 
 def mazeDistance(point1, point2, gameState):
