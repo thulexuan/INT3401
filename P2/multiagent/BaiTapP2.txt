@@ -1,0 +1,12 @@
+Project 2: Multi-Agent Search
+
+Q1: Reflex Agent
+Viết lại hàm đánh giá: def evaluationFunction(self, currentGameState, action) trong class ReflexAgent(Agent)
+- khi ở currentGameState, đi theo hướng action(W,E,S,N), pacman ở trạng thái mới successorGameState = currentGameState.generatePacmanSuccessor(action)
+- Viết hàm đánh giá tính điểm tại mỗi successorGameState của pacman, hướng nào tốt hơn thì có điểm cao hơn
+- Hàm trả về score là điểm tại trạng thái tiếp theo nếu từ currentGameState, pacman đi theo hướng action
+
+Cách làm: 
+- Tính khoảng cách từ vị trí mới của pacman đến food gần nhất --> min_distance_to_food
+- Tính khoảng cách từ vị trí mới của pacman đến ghost gần nhất --> min_distance_to_ghost
+- Trả về score = successorGameState.getScore() + 1 / min_distance_to_food - 2 / min_distance_to_ghost
